@@ -3,15 +3,37 @@
 #![allow(non_snake_case)]
 
 include!("./bindings.rs");
-
-fn main() {
-    unsafe {
-        // die new() Funktion könnte einen null pointer zurückgeben
-        let my_struct = new_c(1); // Erstellen des structs über C Funktion
-        if !my_struct.is_null() {
-            // Abfrage, ob der pointer != null
-            println!("my_struct->i = {}", (*my_struct).i); // Zugriff über raw pointer
+/* bindings zu den C Funktionen weggelassen um Platz zu sparen */
+struct RustStruct {
+    s: *mut CStruct,
+}
+impl RustStruct {
+    fn new(i: i32) -> Result<Self, ()> {
+        // SAFETY: s könnte ein null pointer sein
+        let s = unsafe { new_c(i) };
+        if s.is_null() {
+            // falls s ein null pointer ist -> Error!
+            return Err(());
         }
-        drop_c(my_struct); // manuelle Freigabe des Speichers über C Funktion
+        // Rückgabe eines RustStructs, der einen
+        // gültigen Pointer zu einem CStruct hält
+        Ok(RustStruct { s })
+    }
+    fn get_i(&self) -> i32 {
+        // SAFETY: der Konstruktor des RustStructs prüft bei Erstellung
+        // ob der Pointer gültig ist -> hier kann kein UB entstehen.
+        unsafe { (*self.s).i }
     }
 }
+impl Drop for RustStruct {
+    fn drop(&mut self) {
+        // SAFETY: die drop Funktion sollte nicht fehlschlagen
+        unsafe { drop_c(self.s) };
+    }
+}
+fn main() -> Result<(), ()> {
+    let my_struct = RustStruct::new(1)?; // implizites Error handling mit ? Operator
+    println!("my_struct->i = {}", my_struct.get_i());
+    Ok(())
+} // my_struct fällt aus dem scope -> drop wird implizit aufgerufen,
+  // es entsteht kein memory leak
