@@ -1,14 +1,17 @@
-/// For small projects this file can be created manually, for larger projects I strongly recommend using [bindgen](https://crates.io/crates/bindgen) to generate these bindings automatically.
+// since the standard C int type is is not the same as a standard Rust int type we need to include the C int type for our Rust program
+use std::os::raw::c_int;
 
-// A Rust-idiomatic representation of the struct in the C file we want to use
-#[repr(C)] // Instruction for the Rust compiler to represent the data of the struct in a C code compliant way
-struct CStruct {
-    i: i32,
+/// A Rust-idiomatic representation of the struct from our C library  
+/// The "repr(C)" is an instruction for the Rust compiler to represent the data of the struct in a C code compliant way
+#[repr(C)]
+pub struct MyCStruct {
+    pub x: c_int,
 }
 
-#[link(name = "cstruct")] // Instruction for the Rust compiler to link to the `cstruct.c` file here
+// Declaration of the external C functions = bindings.  
+// The "C" tells the compiler to adhere to the C ABI on function calls
 extern "C" {
-    // Declaration of the external C functions = bindings
-    fn new_c(i: i32) -> *mut CStruct;
-    fn drop_c(s: *mut CStruct);
+    pub fn new(i: i32) -> *mut MyCStruct;
+    pub fn drop(s: *mut MyCStruct);
+    pub fn multiply(s: *mut MyCStruct, factor: c_int);
 }
