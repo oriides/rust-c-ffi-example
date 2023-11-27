@@ -16,7 +16,7 @@ fn main() {
     unsafe {
         let s: *mut MyCStruct = new(2);
         println!("my_struct->x = {}", (*s).x);
-        multiply(&mut *s, 2);
+        multiply(&mut *s, 3);
         println!("my_struct->x = {}", (*s).x);
     }
 

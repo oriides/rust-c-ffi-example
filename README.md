@@ -25,6 +25,8 @@ Output should look something like this:
 ```stdout
 my_struct->x = 2
 my_struct->x = 6
+my_struct->x = 2
+my_struct->x = 6
 ```
 
 ## Repo Structure
@@ -36,7 +38,8 @@ my_struct->x = 6
 │   │   ├── my_struct_lib.c
 │   │   └── my_struct_lib.h
 │   ├── bindings.rs
-│   └── main.rs
+│   ├── main.rs
+│   └── wrapper.rs
 ├── build.rs
 └── Cargo.toml
 ```
@@ -45,6 +48,7 @@ Let me point out the most important bits:
 
 - `Cargo.toml` is where project information and dependencies are tracked. Notice the `cc` build-dependency as well as the `links = "my_struct"` and `build = "build.rs"` declarations.
 - `build.rs` contains the custom build instructions for the rust compiler. Notice the `cc::Build::new().file("src/include/my_struct_lib.c").compile("my_struct");` command which tells the rust compiler to build the `src/include/my_struct_lib.c` file.
-- `main.rs` is where the rust main function lives. This file also contains an wrapper struct in idiomatic Rust around the C struct we are linking to. We are also including the bindings contained in `bindings.rs`
+- `main.rs` is where the rust main function lives. Here we demonstrate how to use the C Struct in Rust code.
 - `bindings.rs` contains the bindings to the C struct and its functions. For small projects this file can be created manually, for larger projects I strongly recommend using [bindgen](https://crates.io/crates/bindgen) to generate these bindings automatically.
+- `wrapper.rs` contains a wrapper struct in idiomatic Rust around the C struct we are linking to. We are also including the bindings contained in `bindings.rs`
 - `my_struct_lib.c` & `my_struct_lib.h` contains an implementation of a struct in C code. We want to use this implementation in our Rust code.
